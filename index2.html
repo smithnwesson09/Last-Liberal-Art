@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta property="og:url"                content="images/Mortgage.JPG" />
+    <meta property="og:title"              content="Liberal Arts" />
+    <meta property="og:image"              content="images/Mortgage.JPG"/>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last Liberal Art</title>
+    <style>
+
+        body{
+            width: fit-content;
+
+            height: fit-content;
+        }
+
+
+        a {
+            color: #000000;
+            text-transform: uppercase;
+            text-decoration: none;
+            padding: 6px 18px 5px 18px;}
+
+        a:hover, a.on {
+            color: #cc3333;
+            background-color: #ffffff;}
+
+
+        body {
+            font: 12px sans-serif;
+        }
+
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+
+        a {
+            color: #000000;
+            text-transform: uppercase;
+            text-decoration: none;
+            padding: 6px 18px 5px 18px;}
+        a:hover, a.on {
+            color: #cc3333;
+            background-color: #ffffff;}
+
+
+        circle:hover {
+            fill: #bd2130;
+            stroke-width: 45px;
+            stroke-opacity: 100%;
+            stroke: red;
+        }
+
+        div.tooltip {
+            float: right;
+            position: absolute;
+            width: 55%;
+            height: 70%;
+            text-align: left;
+            visibility: hidden;
+        }
+
+        table {border: black;
+            border-collapse: collapse;
+            height: 40%;
+            width: 30%;
+            background-color: ghostwhite;
+            color: black;
+            border-radius: 5px;
+            font-size: 110%;
+        }
+
+        td {
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            position: center;
+            text-align: center;
+            font-size: large;
+        }
+        .yearlabel {
+            fill: #777;
+        }
+
+        .yearlabel.active {
+            fill: #aaa;
+        }
+
+        body {
+            font: 13px sans-serif;
+        }
+
+        ul {
+            list-style: none;
+            font-weight: bold;
+        }
+
+        li {
+            margin:  0.2em 0.0em;
+            padding: 0.5em 1.0em;
+            font-weight: normal;
+        }
+        button {
+            position: absolute;
+            right: 30px;
+            top: 30px;
+        }
+        #slide {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 10px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        #slide::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        #slide::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<script src="https://d3js.org/d3.v3.js" charset="utf-8"></script>
+<script src="dragit/src/dragit.js" charset="utf-8"></script>
+<script src="https://code.jquery.com/jquery.js" charset="utf-8"></script>
+<body>
+<div id="page">
+    <header>
+        <h1 id="title"> The Last Liberal Art</h1>
+        <nav>
+            <ul id="navigation">
+                <li><a href="index.html">Software</a></li>
+                <li><a href="index2.html">Market</a></li>
+            </ul>
+        </nav>
+    </header>
+
+
+    <div id="chart">
+
+
+    </div>
+
+    <span id='min-time'>1950</span>
+    <input type="range" name="points" min="1950" max="2018" step="1" value="2017" id="slide" style="width:900px">
+    <span id="max-time">2017</span>
+    <br>
+    <script type="text/javascript">
+
+        function bubblechart(str) {
+
+            var url = str;
+            d3.csv(url, function (error, rawData) {
+                var data = rawData.map(function (d) {
+                    return {
+                        Name: d.Name,
+                        SIC: d.SIC,
+                        Industry: d.Industry,
+                        Ticker: d.Ticker,
+                        Year: +d.Year,
+                        EBITDA: +d.EBITDA,
+                        EBIT: +d.EBIT,
+                        Equity: +d.Equity,
+                        Revenue: +d.Revenue,
+                        BVPS: +d.BVPS,
+                        Assets: +d.Assets,
+                        Debt: +d.Debt,
+                        NI: +d.NI,
+                        IncomeTaxesPaid: +d.IncomeTaxesPaid,
+                        Intangibles: +d.Intangibles,
+                        GrossProfit: +d.GrossProfit,
+                        InvestedCapital: +d.InvestedCapital,
+                        OperatingExpenses: +d.OperatingExpenses,
+                        Dividend: +d.Dividend,
+                        DilutedEPS: +d.DilutedEPS,
+                        Cash: +d.Cash,
+                        ShortTermInvestments: +d.ShortTermInvestments,
+                        InvestmentSecurities: +d.InvestmentSecurities,
+                        Currency: d.Currency,
+                        PTI: +d.PTI,
+                        AnnualReturn: +d.AnnualReturn,
+                        InterestExpence: +d.InterestExpence,
+                        InvestingCashFlow: +d.InvestingCashFlow,
+                        OperatingCashflow: +d.OperatingCashflow,
+
+                    };
+                });
+
+
+                var nested = d3.nest().key(function (d) {
+                    return d.Year;
+                })
+                    .sortKeys(d3.ascending)
+                    .map(data);
+
+
+                var margin = {left: 50, top: 25, bottom: 100, right: 50};
+
+                var graphWidth = 1000, graphHeight = 730;
+                var totalWidth = graphWidth + margin.left + margin.right;
+                var totalHeight = graphHeight + margin.top + margin.bottom;
+
+                var gp = data.map(function (d) {
+                    return d.GrossProfit;
+                });
+                var ebitda = data.map(function (d) {
+                    return d.EBITDA;
+                });
+                var bvps = data.map(function (d) {
+                    return d.BVPS;
+                });
+                var tic = data.map(function (d) {
+                    return d.Ticker;
+                });
+                var ind = data.map(function (d) {
+                    return d.Industry;
+                });
+                var Name = data.map(function (d) {
+                    return d.Name;
+                });
+                var debt = data.map(function (d) {
+                    return d.Debt;
+                });
+                var assets = data.map(function (d) {
+                    return d.Assets;
+                });
+                var capital = data.map(function (d) {
+                    return d.InvestedCapital;
+                });
+                var year = data.map(function (d) {
+                    return d.Year;
+                });
+                var eps = data.map(function (d) {
+                    return d.DilutedEPS;
+                });
+
+                var xScale = d3.scale.linear()
+                    .domain([0, 10000])
+                    .range([100, graphWidth]);
+
+
+
+
+
+                var yScale = d3.scale.linear()
+                    .domain([2000, 0])
+                    .range([0, graphHeight]);
+
+                var popDomain = [d3.min(debt), d3.max(debt)];
+                var popScale = d3.scale.sqrt()
+                    .domain(popDomain)
+                    .range([2, 18]);
+
+                var uniqueRegions = d3.set(tic).values();
+                var regionColorMap = d3.scale.ordinal()
+                    .domain(uniqueRegions)
+                    .range(d3.scale.category10().range());
+
+                // Define the div for the tooltip
+                var div = d3.select('body')
+                    .append('div')
+                    .attr('class', 'tooltip')
+                    .style('overflow-x', 'auto')
+                    .style('pointer-events', 'none');
+
+                var svg = d3.select('#chart').append('svg')
+                    .attr('width', totalWidth)
+                    .attr('height', totalHeight)
+                    .attr("border", "1px lightgray solid");
+
+
+
+                var yAxis = d3.svg.axis().scale(yScale).orient('left').ticks(20).tickFormat(d3.format("s"));
+
+                var yAxisNodes = svg.append('g')
+                    .attr('transform', 'translate(' + (margin.left + margin.right) + ')', -25)
+                    .call(yAxis);
+                styleAxisNodes(yAxisNodes);
+
+                var xAxis = d3.svg.axis().scale(xScale).orient('bottom').ticks(20).tickFormat(d3.format("s"));
+                var xAxisNodes = svg.append('g')
+                    .attr('transform', 'translate(' + (margin.left - margin.right) + ',' + (graphHeight) + ')')
+                    .call(xAxis);
+                styleAxisNodes(xAxisNodes);
+
+                svg.append("text")
+                    .attr("class", "x label")
+                    .attr("text-anchor", "end")
+                    .attr("x", graphWidth - 50)
+                    .attr("y", graphHeight - 10)
+                    .text("Invested capital, Inflation-adjusted ($ in Millions)");
+
+// Add a y-axis label.
+                svg.append("text")
+                    .attr("class", "y label")
+                    .attr("text-anchor", "end")
+                    .attr("y", +110)
+                    .attr("x", -135)
+                    .attr("dy", ".95em")
+                    .attr("transform", "rotate(-90)")
+                    .text("EBITDA, Inflation-adjusted ($ in Millions)");
+
+                var yearLabel = svg.append('g')
+                    .append('text')
+                    .attr('class', 'yearlabel')
+                    .attr('transform', 'translate(750, 700)')
+                    .attr('font-size', '100');
+
+                var bubblesHolder = svg.append("g");
+
+                var interval = 500;
+
+                function render(year) {
+                    var dataForYear = nested[year];
+
+                    var bubbles = bubblesHolder
+                        .selectAll("circle")
+                        .attr("id", function (d) {
+                            return d.Year
+                        })
+                        .data(dataForYear, function (datum) {
+                            return datum.BVPS;
+                        });
+
+                    bubbles.enter()
+                        .append("circle")
+                        .each(setItemAttributes);
+
+                    bubbles
+                        .transition()
+                        .duration(interval)
+                        .each(setItemAttributes);
+
+                    bubbles.exit().remove();
+
+                    yearLabel.text(year);
+
+
+                }
+                function setItemAttributes(d) {
+                    d3.select(this).attr({
+                        cx: xScale(d.InvestedCapital),
+                        cy: yScale(d.EBITDA),
+                        r: popScale(d.Assets),
+                        style: "fill:" + regionColorMap(d.Name) + ";" +
+                            "fill-opacity:0.7;" +
+                            "stroke:" + regionColorMap(d.Ticker) + ";"
+                    })
+                        .on("click", function (d) {
+                            return window.open("https://en.wikipedia.org/wiki/" + d.Name);
+                        })
+                        .on("mouseover", function (d) {
+                            div.transition()
+                                .style('visibility', 'visible')
+                                .duration(550)
+                                .style("opacity", 0.7),
+                                div.html(("<table id='tooltip'><th><b>" + d.Name + ", Fiscal Year Ending: " + d.Year + "</b></th>"
+                                    +
+                                    "<tr><td><b>Intangible Asset Ratio: </b></td><td>" + Math.round((d.Intangibles / d.Assets) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Return on Invested Capital: </b></td><td>" + Math.round((d.NI / d.InvestedCapital) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Return on Assets: </b></td><td>" + Math.round((d.NI / d.Assets) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Return on Equity: </b></td><td>" + Math.round((d.NI / d.Equity) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Diluted Earnings Per Share: </b></td><td>$" + d.DilutedEPS + " </td></tr>"
+                                    +
+                                    "<tr><td><b>Book Value Per Share: </b></td><td>$" + Math.round(d.BVPS) + " </td></tr>"
+                                    +
+                                    "<tr><td><b>Debt relative to Invested capital: </b></td><td>" + Math.round((d.Debt / d.InvestedCapital) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Effective Tax Rate: </b></td><td>" + Math.round((d.IncomeTaxesPaid / d.PTI) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Pre-Tax Profit Margin: </b></td><td>" + Math.round((d.PTI / d.Revenue) * 100) + "%</td></tr>"
+                                    +
+                                    "<tr><td><b>Net Income: </b></td><td>$" + Math.round(d.NI) / 1000 + " (Billion Dollars) </td></table>"))
+
+                                    .style("top", svg.node().parentNode.offsetTop + 250 + "px")
+                                    .style("left", svg.node().parentNode.offsetLeft + 650 + "px");
+                        })
+                        .on("mouseout", function (d) {
+                            div.transition()
+                                .duration(150)
+                                .style("opacity", 0)
+                        });
+
+                }
+                var currentYear =  d3.select("#slide").on("input", function() {
+                    render(+this.value);
+                });
+
+// Initial starting radius of the circle
+                render(2017);
+
+
+                render(currentYear);
+
+                var callback = function () {
+                    return function () {
+                        currentYear;
+                        console.log(currentYear);
+                        if (currentYear <= maxYear) {
+                            render(currentYear);
+                            d3.timer(callback(), interval);
+                        }
+                        return true;
+                    }
+                };
+
+                d3.timer(callback(), interval);
+
+            });
+
+
+
+            function styleAxisNodes(axisNodes) {
+                axisNodes.selectAll('.domain')
+                    .attr({
+                        fill: 'none',
+                        'stroke-width': 3,
+                        stroke: 'black'
+                    });
+                axisNodes.selectAll('.tick line')
+                    .attr({
+                        fill: 'none',
+                        'stroke-width': 3,
+                        stroke: 'black'
+                    });
+            }
+        }
+
+        onload(bubblechart("software.csv"));
+    </script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-125819929-1');
+    </script>
+
+
+</div>
+</body>
+</html>
